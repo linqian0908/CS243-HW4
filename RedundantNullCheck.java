@@ -9,7 +9,7 @@ import flow.Flow;
 import hw2.MySolver;
 import java.util.*;
 
-public static class RedundantNullCheck implements Flow.Analysis {
+public class RedundantNullCheck implements Flow.Analysis {
 
         public static class VarSet implements Flow.DataflowObject {
             private Set<String> set;
