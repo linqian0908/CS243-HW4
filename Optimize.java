@@ -5,7 +5,6 @@ import joeq.Class.jq_Class;
 import joeq.Main.Helper;
 import flow.Flow;
 import hw2.MySolver;
-import submit.RedundantNullCheck;
 
 public class Optimize {
     /*
@@ -14,13 +13,13 @@ public class Optimize {
      */
     public static void optimize(List<String> optimizeFiles, boolean nullCheckOnly) {
     	Flow.Solver solver = new MySolver();
-    	Flow.Analysis nullChecker = new RedundantNullCheck();
+    	Flow.Analysis nc = new NullCheckOptimizer();
     	//Flow.Analysis rd = new ReachingDefinition();
     	
         for (int i = 0; i < optimizeFiles.size(); i++) {
             jq_Class classes = (jq_Class)Helper.load(optimizeFiles.get(i));
             // Run your optimization on each classes.
-            solver.registerAnalysis(nullChecker);
+            solver.registerAnalysis(nc);
             Helper.runPass(classes, solver);
             if (!nullCheckOnly) {
                 //solver.registerAnalysis(rd);
