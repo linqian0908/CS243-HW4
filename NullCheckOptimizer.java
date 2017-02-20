@@ -2,11 +2,12 @@ package submit;
 
 import joeq.Class.jq_Class;
 import joeq.Compiler.Quad.*;
+import joeq.Compiler.Quad.Operand.*;
 import joeq.Compiler.Quad.Operator.*;
 import flow.Flow;
 import java.util.*;
 
-public static class NullCheckOptimizer implements Flow.Analysis {
+public class NullCheckOptimizer implements Flow.Analysis {
 
     public static class VarSet implements Flow.DataflowObject {
         private Set<String> set;
