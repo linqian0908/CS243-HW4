@@ -53,8 +53,8 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         public void killVar(String v) {
             Iterator<Map.Entry<String,String>> it = set.iterator();
             while (it.hasNext()) {
-                Map.Entry<String,String> element = iterator.next();
-                if (element.getKey().equals(v) || element.getValue.equals(v)) {
+                Map.Entry<String,String> element = it.next();
+                if (element.getKey().equals(v) || element.getValue().equals(v)) {
                     it.remove();
                 }
             }
@@ -84,7 +84,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                s.add(new AbstractMap.SimpleEntry(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
+                s.add(new Map.Entry(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
             }
         }
 
@@ -186,7 +186,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
                 val.killVar(def.getRegister().toString());
             }
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                    val.genVar(new AbstractMap.SimpleEntry(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
+                    val.genVar(new Map.Entry(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
             }
         }
     }
