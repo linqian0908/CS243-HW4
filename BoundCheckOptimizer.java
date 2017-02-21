@@ -126,15 +126,18 @@ public class BoundCheckOptimizer implements Flow.Analysis {
 
     public void postprocess(ControlFlowGraph cfg) {
         QuadIterator qit = new QuadIterator(cfg);
+        System.out.print(cfg.getMethod().getName());
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
                 int id = q.getID();
                 if (in[id].contains(q.toString())) {
                     qit.remove();
+                    System.out.print(" "+id);
                 }
             }
         }
+        System.out.println();
     }
 
     /* Is this a forward dataflow analysis? */
