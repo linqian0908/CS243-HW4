@@ -8,8 +8,7 @@ import flow.Flow;
 import java.util.*;
 
 public class BoundCheckOptimizer implements Flow.Analysis {
-
-    public static Set<String> universalSet = new TreeSet<String>();
+;
     public class DefSet implements Flow.DataflowObject {
         private Set<String> set;
         public static Set<String> universalSet;
@@ -39,6 +38,11 @@ public class BoundCheckOptimizer implements Flow.Analysis {
             DefSet t = (DefSet)o;
             this.set.retainAll(t.set);
         }
+        
+        public boolean contains(String s) {
+            return this.set.contains(s);
+        }
+        
         public void copy (Flow.DataflowObject o) 
         {
             DefSet t = (DefSet)o;
