@@ -9,7 +9,7 @@ import java.util.*;
 
 public class BoundCheckOptimizer implements Flow.Analysis {
 ;
-    public class DefSet implements Flow.DataflowObject {
+    public static class DefSet implements Flow.DataflowObject {
         private Set<String> set;
         public static Set<String> universalSet;
         /**
