@@ -9,32 +9,47 @@ import java.util.*;
 
 public class BoundCheckOptimizer implements Flow.Analysis {
 
-    public static class VarSet implements Flow.DataflowObject {
-        private Set<Pair<String,String>> set;
-        public static Set<Pair<String,String>> universalSet;
-        public VarSet() { set = new TreeSet<Pair<String,String>>(); }
-
-        public void setToTop() { set = new TreeSet<Pair<String,String>>(universalSet); }
-        public void setToBottom() { set = new TreeSet<Pair<String,String>>(); }
-
-        public void meetWith(Flow.DataflowObject o) 
+    public static Set<String> universalSet = new TreeSet<String>();
+    public class DefSet implements Flow.DataflowObject {
+        private Set<String> set;
+        /**
+         * Methods from the Flow.DataflowObject interface.
+         * See Flow.java for the meaning of these methods.
+         * These need to be filled in.
+         */
+        public DefSet()
         {
-            VarSet a = (VarSet)o;
-            set.retainAll(a.set);
+            set =  new TreeSet<String>();
         }
-
-        public void copy(Flow.DataflowObject o) 
+        public void setToTop() 
         {
-            VarSet a = (VarSet) o;
-            set = new TreeSet<Pair<String,String>>(a.set);
+            set = new TreeSet<String>(universalSet);
+        }
+        public void setToBottom() 
+        {
+            set = new TreeSet<String>();
+        }
+        
+        /**
+         * Meet is a union
+         */
+        public void meetWith (Flow.DataflowObject o) 
+        {
+            DefSet t = (DefSet)o;
+            this.set.retainAll(t.set);
+        }
+        public void copy (Flow.DataflowObject o) 
+        {
+            DefSet t = (DefSet)o;
+            set = new TreeSet<String>(t.set);
         }
 
         @Override
         public boolean equals(Object o) 
         {
-            if (o instanceof VarSet) 
+            if (o instanceof DefSet) 
             {
-                VarSet a = (VarSet) o;
+                DefSet a = (DefSet) o;
                 return set.equals(a.set);
             }
             return false;
@@ -43,26 +58,31 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         public int hashCode() {
             return set.hashCode();
         }
+        /**
+         * toString() method for the dataflow objects which is used
+         * by postprocess() below.  The format of this method must
+         * be of the form "[ID0, ID1, ID2, ...]", where each ID is
+         * the identifier of a quad defining some register, and the
+         * list of IDs must be sorted.  See src/test/test.rd.out
+         * for example output of the analysis.  The output format of
+         * your reaching definitions analysis must match this exactly.
+         */
         @Override
-        public String toString() 
-        {
-            return set.toString();
-        }
-
-        public void genVar(Pair<String,String> v) {set.add(v);}
-        public void killVar(String v) {
-            Iterator<Pair<String,String>> it = set.iterator();
+        public String toString() { return set.toString(); }
+        public void genVar(int v) { set.add(v);}
+        public void killVar(int v) { 
+            Iterator<String> it = set.iterator();
             while (it.hasNext()) {
-                Pair<String,String> element = it.next();
-                if (element.getKey().equals(v) || element.getValue().equals(v)) {
+                String s = it.next();
+                if (s.contains(v)) {
                     it.remove();
                 }
             }
         }
     }
 
-    private VarSet[] in, out;
-    private VarSet entry, exit;
+    private DefSet[] in, out;
+    private DefSet entry, exit;
 
     public void preprocess(ControlFlowGraph cfg) {
         /* Generate initial conditions. */
@@ -73,46 +93,42 @@ public class BoundCheckOptimizer implements Flow.Analysis {
             if (x > max) max = x;
         }
         max += 1;
-        in = new VarSet[max];
-        out = new VarSet[max];
+        in = new DefSet[max];
+        out = new DefSet[max];
         qit = new QuadIterator(cfg);
 
         Set<Pair<String,String>> s = new TreeSet<Pair<String,String>>();
-        VarSet.universalSet = s;
+        DefSet.universalSet = s;
 
         /* Arguments are always there. */
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                s.add(new Pair(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
+                s.add(q.toString());
             }
         }
 
-        entry = new VarSet();
-        exit = new VarSet();
-        transferfn.val = new VarSet();
+        entry = new DefSet();
+        exit = new DefSet();
+        transferfn.val = new DefSet();
         for (int i=0; i<in.length; i++) {
-            in[i] = new VarSet();
+            in[i] = new DefSet();
             in[i].setToTop();
-            out[i] = new VarSet();
+            out[i] = new DefSet();
             out[i].setToTop();
         }
     }
 
     public void postprocess(ControlFlowGraph cfg) {
         QuadIterator qit = new QuadIterator(cfg);
-        System.out.print(cfg.getMethod().getName());
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                int id = q.getID();
-                if (in[id].equals(out[id])) {
-                    System.out.print(" "+id);
+                if (in[id].contains(q.toString())) {
                     qit.remove();
                 }
             }
         }
-        System.out.println();
     }
 
     /* Is this a forward dataflow analysis? */
@@ -162,7 +178,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
     }
 
     public Flow.DataflowObject newTempVar() {         
-        VarSet val = new VarSet();
+        DefSet val = new DefSet();
         val.setToTop();
         return val; 
     }
@@ -179,14 +195,14 @@ public class BoundCheckOptimizer implements Flow.Analysis {
 
     /* The QuadVisitor that actually does the computation */
     public static class TransferFunction extends QuadVisitor.EmptyVisitor {
-        VarSet val;
+        DefSet val;
         @Override
         public void visitQuad(Quad q) {
             for (RegisterOperand def : q.getDefinedRegisters()) {
                 val.killVar(def.getRegister().toString());
             }
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                    val.genVar(new Pair(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
+                    val.genVar(q.toString());
             }
         }
     }
