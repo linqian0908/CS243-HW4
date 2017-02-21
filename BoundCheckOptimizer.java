@@ -6,9 +6,9 @@ import joeq.Compiler.Quad.Operand.*;
 import joeq.Compiler.Quad.Operator.*;
 import flow.Flow;
 import java.util.*;
-import java.AbstractMap.*;
+import java.util.AbstractMap.*;
 
-public class BoundsCheckOptimizer implements Flow.Analysis {
+public class BoundCheckOptimizer implements Flow.Analysis {
 
     public static class VarSet implements Flow.DataflowObject {
         private Set<SimpleEntry<String,String>> set;
@@ -27,7 +27,7 @@ public class BoundsCheckOptimizer implements Flow.Analysis {
         public void copy(Flow.DataflowObject o) 
         {
             VarSet a = (VarSet) o;
-            set = new TreeSet<SimpleEntry<String,String>g>(a.set);
+            set = new TreeSet<SimpleEntry<String,String>>(a.set);
         }
 
         @Override
@@ -187,7 +187,7 @@ public class BoundsCheckOptimizer implements Flow.Analysis {
                 val.killVar(def.getRegister().toString());
             }
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                    val.genVar(new SimpleEntry(q.getRef().toString(),q.getIndex().toString());
+                    val.genVar(new SimpleEntry(q.getRef().toString(),q.getIndex().toString()));
             }
         }
     }
