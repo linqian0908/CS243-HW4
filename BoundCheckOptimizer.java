@@ -109,7 +109,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                s.add(q.toString());
+                s.add(BC2String(q));
             }
         }
 
@@ -124,37 +124,38 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         }
     }
     
-    private String BC2String ( Quad q ) {
+    private static String BC2String ( Quad q ) {
         Operand.RegisterOperand ref = (Operand.RegisterOperand) Operator.BoundsCheck.getRef(q);
         String sref = ref.getRegister().toString();
         Operand idx = Operator.BoundsCheck.getIndex(q);
-        Operand sidx;
-		if (idx instanceof Operand.RegisterOperand) {
-		    idx = (Operand.RegisterOperand) idx;
-		    sidx = idx.getRegister().toString();
-		}
-		else {
-		    idx = (Operand.IConstOperand) idx;
-		    sidx = idx.toString();
-		}
-		return sref+","+sidx;
+        String sidx;
+        if (idx instanceof Operand.RegisterOperand) {
+            Operand.RegisterOperand oidx = (Operand.RegisterOperand) idx;
+            sidx = oidx.getRegister().toString();
+        }
+        else {
+            Operand.IConstOperand iidx = (Operand.IConstOperand) idx;
+            sidx = iidx.toString();
+        }
+        return sref+","+sidx;
     }
 
     public void postprocess(ControlFlowGraph cfg) {
         QuadIterator qit = new QuadIterator(cfg);
-        System.out.println(cfg.getMethod().getName());
+        //System.out.print(cfg.getMethod().getName());
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
                 int id = q.getID();
-                System.out.println(q.toString());
-                System.out.println(BC2String(q));
-                if (in[id].contains(q.toString())) {
+                //System.out.println(q.toString());
+                //System.out.println(BC2String(q));
+                if (in[id].contains(BC2String(q))) {
+                    //System.out.print(" "+id);
                     qit.remove();
                 }
             }
         }
-        System.out.println();
+        //System.out.println();
     }
 
     /* Is this a forward dataflow analysis? */
@@ -228,7 +229,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
                 val.killVar(def.getRegister().toString());
             }
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                    val.genVar(q.toString());
+                    val.genVar(BC2String(q));
             }
         }
     }

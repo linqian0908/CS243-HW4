@@ -14,7 +14,7 @@ public class Optimize {
     public static void optimize(List<String> optimizeFiles, boolean nullCheckOnly) {
     	Flow.Solver solver = new MySolver();
     	Flow.Analysis nc = new NullCheckOptimizer();
-    	//Flow.Analysis rd = new ReachingDefinition();
+    	Flow.Analysis bc = new BoundCheckOptimizer();
     	
         for (int i = 0; i < optimizeFiles.size(); i++) {
             jq_Class classes = (jq_Class)Helper.load(optimizeFiles.get(i));
@@ -22,8 +22,8 @@ public class Optimize {
             solver.registerAnalysis(nc);
             Helper.runPass(classes, solver);
             if (!nullCheckOnly) {
-                //solver.registerAnalysis(rd);
-                //Helper.runPass(classes[i],solver);
+                solver.registerAnalysis(bc);
+                Helper.runPass(classes,solver);
             }
         }
     }
