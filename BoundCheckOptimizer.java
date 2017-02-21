@@ -12,6 +12,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
     public static Set<String> universalSet = new TreeSet<String>();
     public class DefSet implements Flow.DataflowObject {
         private Set<String> set;
+        public static Set<String> universalSet;
         /**
          * Methods from the Flow.DataflowObject interface.
          * See Flow.java for the meaning of these methods.
@@ -69,8 +70,8 @@ public class BoundCheckOptimizer implements Flow.Analysis {
          */
         @Override
         public String toString() { return set.toString(); }
-        public void genVar(int v) { set.add(v);}
-        public void killVar(int v) { 
+        public void genVar(String v) { set.add(v);}
+        public void killVar(String v) { 
             Iterator<String> it = set.iterator();
             while (it.hasNext()) {
                 String s = it.next();
@@ -97,7 +98,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         out = new DefSet[max];
         qit = new QuadIterator(cfg);
 
-        Set<Pair<String,String>> s = new TreeSet<Pair<String,String>>();
+        Set<String> s = new TreeSet<String>();
         DefSet.universalSet = s;
 
         /* Arguments are always there. */
@@ -124,6 +125,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
+                int id = q.getID();
                 if (in[id].contains(q.toString())) {
                     qit.remove();
                 }
