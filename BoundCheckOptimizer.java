@@ -6,7 +6,6 @@ import joeq.Compiler.Quad.Operand.*;
 import joeq.Compiler.Quad.Operator.*;
 import flow.Flow;
 import java.util.*;
-import org.apache.commons.lang3.tuple.*;
 
 public class BoundCheckOptimizer implements Flow.Analysis {
 
