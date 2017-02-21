@@ -14,14 +14,19 @@ public class Optimize {
     public static void optimize(List<String> optimizeFiles, boolean nullCheckOnly) {
     	Flow.Solver solver = new MySolver();
     	Flow.Analysis nc = new NullCheckOptimizer();
+    	Flow.Analysis nct = new NullCheckTightOptimizer();
     	Flow.Analysis bc = new BoundCheckOptimizer();
     	
         for (int i = 0; i < optimizeFiles.size(); i++) {
             jq_Class classes = (jq_Class)Helper.load(optimizeFiles.get(i));
             // Run your optimization on each classes.
-            solver.registerAnalysis(nc);
-            Helper.runPass(classes, solver);
-            if (!nullCheckOnly) {
+            if (nullCheckOnly) {
+                solver.registerAnalysis(nc);
+                Helper.runPass(classes, solver);
+            }
+            else {
+                solver.registerAnalysis(nct);
+                Helper.runPass(classes, solver);
                 solver.registerAnalysis(bc);
                 Helper.runPass(classes,solver);
             }
