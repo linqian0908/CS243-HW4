@@ -6,16 +6,17 @@ import joeq.Compiler.Quad.Operand.*;
 import joeq.Compiler.Quad.Operator.*;
 import flow.Flow;
 import java.util.*;
+import org.apache.commons.lang3.tuple.*;
 
 public class BoundCheckOptimizer implements Flow.Analysis {
 
     public static class VarSet implements Flow.DataflowObject {
-        private Set<Map.Entry<String,String>> set;
-        public static Set<Map.Entry<String,String>> universalSet;
-        public VarSet() { set = new TreeSet<Map.Entry<String,String>>(); }
+        private Set<Pair<String,String>> set;
+        public static Set<Pair<String,String>> universalSet;
+        public VarSet() { set = new TreeSet<Pair<String,String>>(); }
 
-        public void setToTop() { set = new TreeSet<Map.Entry<String,String>>(universalSet); }
-        public void setToBottom() { set = new TreeSet<Map.Entry<String,String>>(); }
+        public void setToTop() { set = new TreeSet<Pair<String,String>>(universalSet); }
+        public void setToBottom() { set = new TreeSet<Pair<String,String>>(); }
 
         public void meetWith(Flow.DataflowObject o) 
         {
@@ -26,7 +27,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         public void copy(Flow.DataflowObject o) 
         {
             VarSet a = (VarSet) o;
-            set = new TreeSet<Map.Entry<String,String>>(a.set);
+            set = new TreeSet<Pair<String,String>>(a.set);
         }
 
         @Override
@@ -49,11 +50,11 @@ public class BoundCheckOptimizer implements Flow.Analysis {
             return set.toString();
         }
 
-        public void genVar(Map.Entry<String,String> v) {set.add(v);}
+        public void genVar(Pair<String,String> v) {set.add(v);}
         public void killVar(String v) {
-            Iterator<Map.Entry<String,String>> it = set.iterator();
+            Iterator<Pair<String,String>> it = set.iterator();
             while (it.hasNext()) {
-                Map.Entry<String,String> element = it.next();
+                Pair<String,String> element = it.next();
                 if (element.getKey().equals(v) || element.getValue().equals(v)) {
                     it.remove();
                 }
@@ -77,14 +78,14 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         out = new VarSet[max];
         qit = new QuadIterator(cfg);
 
-        Set<Map.Entry<String,String>> s = new TreeSet<Map.Entry<String,String>>();
+        Set<Pair<String,String>> s = new TreeSet<Pair<String,String>>();
         VarSet.universalSet = s;
 
         /* Arguments are always there. */
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                s.add(new Map.Entry(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
+                s.add(new Pair(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
             }
         }
 
@@ -186,7 +187,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
                 val.killVar(def.getRegister().toString());
             }
             if (q.getOperator() instanceof Operator.BoundsCheck) {
-                    val.genVar(new Map.Entry(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
+                    val.genVar(new Pair(Operator.BoundsCheck.getRef(q).toString(),Operator.BoundsCheck.getIndex(q).toString()));
             }
         }
     }
