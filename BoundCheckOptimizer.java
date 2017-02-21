@@ -126,14 +126,23 @@ public class BoundCheckOptimizer implements Flow.Analysis {
 
     public void postprocess(ControlFlowGraph cfg) {
         QuadIterator qit = new QuadIterator(cfg);
-        System.out.print(cfg.getMethod().getName());
+        System.out.println(cfg.getMethod().getName());
         while (qit.hasNext()) {
             Quad q = qit.next();
             if (q.getOperator() instanceof Operator.BoundsCheck) {
                 int id = q.getID();
+                System.out.println(q.toString());
+		Operand.RegisterOperand ref = (Operand.RegisterOperand) Operator.BoundsCheck.getRef(q);
+		Operand idx = Operator.BoundsCheck.getIndex(q);
+		if (idx instanceof Operand.RegisterOperand) {
+		    idx = (Operand.RegisterOperand) idx;
+		}
+		else {
+		    idx = (Operand.IConstOperand) idx;
+		}
+		System.out.println(q.getUsedRegisters().size()+", "+ref.getRegister().toString()+", "+idx.toString());
                 if (in[id].contains(q.toString())) {
                     qit.remove();
-                    System.out.print(" "+id);
                 }
             }
         }
