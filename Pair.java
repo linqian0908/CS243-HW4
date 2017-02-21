@@ -1,5 +1,6 @@
-package submit
+package submit;
 
+import java.util.*;
 /**
  * Container to ease passing around a tuple of two objects. This object provides a sensible
  * implementation of equals(), returning true if equals() is true on each of the contained
@@ -43,7 +44,7 @@ public class Pair<F, S> {
             return false;
         }
         Pair<?, ?> p = (Pair<?, ?>) o;
-        return Objects.equals(p.first, first) && Objects.equals(p.second, second);
+        return Object.equals(p.first, first) && Object.equals(p.second, second);
     }
 
     /**
