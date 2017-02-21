@@ -59,7 +59,6 @@ public class LiveOptimizer implements Flow.Analysis {
     private VarSet entry, exit;
 
     public void preprocess(ControlFlowGraph cfg) {
-        System.out.println("Method: "+cfg.getMethod().getName().toString());
         /* Generate initial conditions. */
         QuadIterator qit = new QuadIterator(cfg);
         int max = 0;
@@ -98,25 +97,24 @@ public class LiveOptimizer implements Flow.Analysis {
             in[i] = new VarSet();
             out[i] = new VarSet();
         }
-
-        System.out.println("Initialization completed.");
     }
 
     public void postprocess(ControlFlowGraph cfg) {
         QuadIterator qit = new QuadIterator(cfg);
-        System.out.print(cfg.getMethod().getName());
+        //System.out.print(cfg.getMethod().getName());
         while (qit.hasNext()) {
             Quad q = qit.next();
             int id = q.getID();
             if (q.getDefinedRegisters().size()==1) {
                 for (Operand.RegisterOperand def : q.getDefinedRegisters()) {
-                    if (!in[id].contains(def.getRegister().toString())) {
+                    if (!out[id].contains(def.getRegister().toString())) {
                         qit.remove();
-                        System.out.print(" "+id);
+                        //System.out.print(" "+id);
                     }
                 }
             }
         }
+        //System.out.println();
     }
 
     /* Is this a forward dataflow analysis? */

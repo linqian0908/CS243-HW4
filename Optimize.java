@@ -16,11 +16,12 @@ public class Optimize {
     	Flow.Analysis nc = new NullCheckOptimizer();
     	Flow.Analysis nct = new NullCheckTightOptimizer();
     	Flow.Analysis bc = new BoundCheckOptimizer();
-    	
+        Flow.Analysis lv = new LiveOptimizer();
+	
         for (int i = 0; i < optimizeFiles.size(); i++) {
             jq_Class classes = (jq_Class)Helper.load(optimizeFiles.get(i));
             // Run your optimization on each classes.
-            if (nullCheckOnly) {
+            if (nullCheckOnly=true) {
                 solver.registerAnalysis(nc);
                 Helper.runPass(classes, solver);
             }
@@ -29,6 +30,8 @@ public class Optimize {
                 Helper.runPass(classes, solver);
                 solver.registerAnalysis(bc);
                 Helper.runPass(classes,solver);
+		solver.registerAnalysis(lv);
+		Helper.runPass(classes,solver);
             }
         }
     }
