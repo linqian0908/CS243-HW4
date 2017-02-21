@@ -1,11 +1,12 @@
-package flow;
+package submit;
 
 import java.util.*;
 import joeq.Compiler.Quad.*;
 import joeq.Compiler.Quad.Operand.*;
 import joeq.Main.Helper;
+import flow.Flow;
 
-public class ConstantProp implements Flow.Analysis {
+public class ConstantPropOptimizer implements Flow.Analysis {
 
     public static class SingleCP implements Flow.DataflowObject {
         private int state;
@@ -211,42 +212,44 @@ public class ConstantProp implements Flow.Analysis {
 
     public void postprocess (ControlFlowGraph cfg) {
         QuadIterator qit = new QuadIterator(cfg);
-        //System.out.print(cfg.getMethod().getName());
+        System.out.println(cfg.getMethod().getName());
+         
         while (qit.hasNext()) {
             Quad q = qit.next();
-            UnmodifiableList.RegisterOperand defs = getDefinedRegisters();
-            if (defs.size()==1) {
-                String def = defs.getRegisterOperand(0).getRegister().toString();
-                if (out[i].get(def).isConst()) {
-                    Quad newq = Operator.Move.create(q.getID(),new Operator.Move(),def,new Operand.IConstOperand(out[d].get(def).getConst()));
-                    qit.add(newq);
-                    qit.remove();
-                }
-                else if (q instanceof Operator.Binary) {
-                    Operand src1 = Operator.Binary.getScr1(q);
-                    Operand src2 = Operator.Binary.getScr2(q);
-                    if (src1 instanceof Operand.RegisterOperand) {
-                        String use = ((Operand.RegisterOperand) src1).getRegister().toString();
-                        if (in[i].get(use).isConst()) {
-                            Operator.Binary.setScr1(new Operand.IConstOperand(in[d].get(use).getConst()));
-                        }
+            int id = q.getID();
+            if (q.getDefinedRegisters().size()==1) {
+                for (Operand.RegisterOperand def:  q.getDefinedRegisters()) {
+                    String reg = def.getRegister().toString();
+                    if (out[id].get(reg).isConst()) {
+                        Quad newq = Operator.Move.create(id,Operator.Move.MOVE_I.INSTANCE,new Operand.RegisterOperand(def.getRegister(),def.getType()),new Operand.IConstOperand(out[id].get(reg).getConst()));
+                        qit.remove();
+                        qit.add(newq);
                     }
-                    if (src2 instanceof Operand.RegisterOperand) {
-                        String use = ((Operand.RegisterOperand) src2).getRegister().toString();
-                        if (in[i].get(use).isConst()) {
-                            Operator.Binary.setScr1(new Operand.IConstOperand(in[d].get(use).getConst()));
+                
+                    else if (q.getOperator() instanceof Operator.Binary) {
+                        Operand src1 = Operator.Binary.getSrc1(q);
+                        Operand src2 = Operator.Binary.getSrc2(q);
+                        if (src1 instanceof Operand.RegisterOperand) {
+                            String use = ((Operand.RegisterOperand) src1).getRegister().toString();
+                            if (in[id].get(use).isConst()) {
+                                Operator.Binary.setSrc1(q,new Operand.IConstOperand(in[id].get(use).getConst()));
+                            }
+                        }
+                        if (src2 instanceof Operand.RegisterOperand) {
+                            String use = ((Operand.RegisterOperand) src2).getRegister().toString();
+                            if (in[id].get(use).isConst()) {
+                                Operator.Binary.setSrc2(q,new Operand.IConstOperand(in[id].get(use).getConst()));
+                            }
                         }
                     }
                 }
             }
         }
-        
-        System.out.println("entry: "+entry.toString());
-        for (int i=0; i<in.length; i++) {
-            System.out.println(i+" in:  "+in[i].toString());
-            System.out.println(i+" out: "+out[i].toString());
-        }
-        System.out.println("exit: "+exit.toString());
+        /*
+        qit = new QuadIterator(cfg);
+        while (qit.hasNext()) {
+            System.out.println(qit.next().toString());
+        }*/
     }
 
     /* Is this a forward dataflow analysis? */
