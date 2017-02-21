@@ -10,12 +10,12 @@ import java.util.*;
 public class BoundCheckOptimizer implements Flow.Analysis {
 
     public static class VarSet implements Flow.DataflowObject {
-        private Set<AbstractMap.SimpleEntry<String,String>> set;
-        public static Set<AbstractMap.SimpleEntry<String,String>> universalSet;
-        public VarSet() { set = new TreeSet<AbstractMap.SimpleEntry<String,String>>(); }
+        private Set<Map.Entry<String,String>> set;
+        public static Set<Map.Entry<String,String>> universalSet;
+        public VarSet() { set = new TreeSet<Map.Entry<String,String>>(); }
 
-        public void setToTop() { set = new TreeSet<AbstractMap.SimpleEntry<String,String>>(universalSet); }
-        public void setToBottom() { set = new TreeSet<AbstractMap.SimpleEntry<String,String>>(); }
+        public void setToTop() { set = new TreeSet<Map.Entry<String,String>>(universalSet); }
+        public void setToBottom() { set = new TreeSet<Map.Entry<String,String>>(); }
 
         public void meetWith(Flow.DataflowObject o) 
         {
@@ -26,7 +26,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         public void copy(Flow.DataflowObject o) 
         {
             VarSet a = (VarSet) o;
-            set = new TreeSet<AbstractMap.SimpleEntry<String,String>>(a.set);
+            set = new TreeSet<Map.Entry<String,String>>(a.set);
         }
 
         @Override
@@ -49,11 +49,11 @@ public class BoundCheckOptimizer implements Flow.Analysis {
             return set.toString();
         }
 
-        public void genVar(AbstractMap.SimpleEntry<String,String> v) {set.add(v);}
+        public void genVar(Map.Entry<String,String> v) {set.add(v);}
         public void killVar(String v) {
-            Iterator<AbstractMap.SimpleEntry<String,String>> it = set.iterator();
+            Iterator<Map.Entry<String,String>> it = set.iterator();
             while (it.hasNext()) {
-                AbstractMap.SimpleEntry<String,String> element = iterator.next();
+                Map.Entry<String,String> element = iterator.next();
                 if (element.getKey().equals(v) || element.getValue.equals(v)) {
                     it.remove();
                 }
@@ -77,7 +77,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
         out = new VarSet[max];
         qit = new QuadIterator(cfg);
 
-        Set<AbstractMap.SimpleEntry<String,String>> s = new TreeSet<AbstractMap.SimpleEntry<String,String>>();
+        Set<Map.Entry<String,String>> s = new TreeSet<Map.Entry<String,String>>();
         VarSet.universalSet = s;
 
         /* Arguments are always there. */
