@@ -1,3 +1,74 @@
 Describe your design for extra credit in this file.
 
 Give a high level description on each of your optimization techniques. We don't expect too much details. Usually less than 5 sentences should be enough to describe each optimization. But make sure we understand what you are doing.
+
+1. Liveness
+remove quad which defines variable that is not live at a particular point
+
+2. Copy propagation + Constant propagation + Common subexpression elimination (reaching definition?) 
+
+3. Deadcode elimination
+
+4. BOUNDS_CHECK elimination
+
+https://en.wikipedia.org/wiki/Copy_propagation
+copy propagation
+
+https://en.wikipedia.org/wiki/Constant_folding
+constant folding (copy propagation and constant propagation)
+
+Remove redundant array bounds checking. 
+Remove redundant type checking. 
+
+http://infolab.stanford.edu/~ullman/dragon/w06/doc/hw/pa2.html
+
+Compiler construction
+https://en.wikibooks.org/wiki/Compiler_Construction/Optimization
+
+
+
+linqian% grep "BOUND_CHECK" SkipListQuad | wc -l
+0
+linqian% grep "BOUNDS_CHECK" SkipListQuad | wc -l
+44
+linqian% grep "NULL_CHECK" SkipListQuad | wc -l
+115
+linqian% grep "INSTANCEOF" SkipListQuad | wc -l
+0
+linqian% grep "ZERO_CHECK" SkipListQuad | wc -l
+1
+linqian% grep "ASTORE_CHECK" SkipListQuad | wc -l
+9
+linqian% grep "MOVE" SkipListQuad | wc -l
+40
+
+
+bin/parun flow.Flow hw2.MySolver flow.ConstantProp test.SkipList | grep -E "NAC|undef|Initialization|Now"  > SkipList.cp.nac
+diff SkipList.cp SkipList.cp.nac 
+< Method: run
+266d264
+< Method: main
+304d301
+< Method: test
+309,310d305
+< 1 in:  {T0=20}
+< 1 out: {T0=20}
+312,316d306
+< 2 out: {T0=20}
+< 3 in:  {T0=20}
+< 3 out: {T0=20}
+< exit: {T0=20}
+< Method: <init>
+330d319
+< Method: <init>
+426d414
+< Method: isEmpty
+452d439
+< Method: choosePowers
+566d552
+< Method: chooseLevel
+676d661
+< Method: search
+866d850
+< Method: insert
+
