@@ -191,12 +191,12 @@ public class NullCheckTightOptimizer implements Flow.Analysis {
             else {
                 boolean flag = true;
                 for (RegisterOperand use : q.getUsedRegisters()) {
-                    if (!val.contains(use.getRegister.toString())) {
+                    if (!val.contains(use.getRegister().toString())) {
                         flag = false;
                         break;
                     }
                 }
-                if (flag is false) {
+                if (flag== false) {
                     for (RegisterOperand def : q.getDefinedRegisters()) {
                         val.killVar(def.getRegister().toString());
                     }
