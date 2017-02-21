@@ -123,6 +123,22 @@ public class BoundCheckOptimizer implements Flow.Analysis {
             out[i].setToTop();
         }
     }
+    
+    private String BC2String ( Quad q ) {
+        Operand.RegisterOperand ref = (Operand.RegisterOperand) Operator.BoundsCheck.getRef(q);
+        String sref = ref.getRegister().toString();
+        Operand idx = Operator.BoundsCheck.getIndex(q);
+        Operand sidx;
+		if (idx instanceof Operand.RegisterOperand) {
+		    idx = (Operand.RegisterOperand) idx;
+		    sidx = idx.getRegister().toString();
+		}
+		else {
+		    idx = (Operand.IConstOperand) idx;
+		    sidx = idx.toString();
+		}
+		return sref+","+sidx;
+    }
 
     public void postprocess(ControlFlowGraph cfg) {
         QuadIterator qit = new QuadIterator(cfg);
@@ -132,15 +148,7 @@ public class BoundCheckOptimizer implements Flow.Analysis {
             if (q.getOperator() instanceof Operator.BoundsCheck) {
                 int id = q.getID();
                 System.out.println(q.toString());
-		Operand.RegisterOperand ref = (Operand.RegisterOperand) Operator.BoundsCheck.getRef(q);
-		Operand idx = Operator.BoundsCheck.getIndex(q);
-		if (idx instanceof Operand.RegisterOperand) {
-		    idx = (Operand.RegisterOperand) idx;
-		}
-		else {
-		    idx = (Operand.IConstOperand) idx;
-		}
-		System.out.println(q.getUsedRegisters().size()+", "+ref.getRegister().toString()+", "+idx.toString());
+                System.out.println(BC2String(q));
                 if (in[id].contains(q.toString())) {
                     qit.remove();
                 }
